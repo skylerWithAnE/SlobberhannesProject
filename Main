@@ -1,0 +1,22 @@
+require_relative 'game_server'
+
+Signal.trap(:INT) do
+  puts 'You have killed me!'
+end
+
+def main
+  s = GameServer.new
+  sleep(0.001)
+  while s.status != :stopped or s.status != :initialized
+    s.get_players
+    sleep(0.001)
+    puts 'main loop ' , s.status
+    s.update
+  end
+
+  if s.status == :full
+    s.start_game
+  end
+end
+
+main
