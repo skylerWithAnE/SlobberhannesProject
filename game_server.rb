@@ -5,7 +5,7 @@ class GameServer
 
   def initialize
 
-    @dts = TCPServer.new('0.0.0.0', 7672)
+    @dts = TCPServer.new('0.0.0.0',6666)#('0.0.0.0', 7672)
 
     @players = Array.new
     @threads = ThreadGroup.new
@@ -22,9 +22,11 @@ class GameServer
     @status
   end
 
-  def send_msg(ps, msg)
+  def send_msg(ps, msg, identifier)
     m = msg.unpack('A*')
-    ps.print(m)
+    ps.print(identifier)
+    ps.puts(m)
+    ps.flush
     sleep(0.01)
   end
 
@@ -35,7 +37,7 @@ class GameServer
       @players[@connections].join(s, name, @connections)
       p = @players[@connections]
       greeting = 'Welcome to the server, ' + name + '!'
-      send_msg(p.socket, greeting)
+      send_msg(p.socket, greeting, 1)
       @connections += 1
     end)
   end
@@ -43,7 +45,14 @@ class GameServer
   def new_player_notify
     for i in 0...@connections-1
       notification = ('New player ' + @players[@connections-1].name + ' has joined the server!')
-      send_msg(@players[i].socket, notification)
+      puts notification
+      send_msg(@players[i].socket, notification, 4)
+    end
+  end
+
+  def poll_clients
+    @players.each do |p|
+
     end
   end
 
@@ -68,13 +77,13 @@ class GameServer
     puts 'Max reached!'
     @players.each do |p|
       print('Sending message to ',p.name,"\n")
-      send_msg(p.socket, 'startgame')
+      send_msg(p.socket, 'startgame', 0)
     end
   end
 
   def shut_down
     @players.each do |p|
-      send_msg(p.socket, 'shutdown')
+      send_msg(p.socket, 'shutdown', 0)
       sleep 0.1
       p.socket.close
     end
