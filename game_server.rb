@@ -23,6 +23,7 @@ class GameServer
   end
 
   def send_msg(ps, msg, identifier)
+    print('sending message: ', identifier, msg)
     m = msg.unpack('A*')
     ps.print(identifier)
     ps.puts(m)
@@ -36,8 +37,10 @@ class GameServer
       name = s.gets.chomp
       @players[@connections].join(s, name, @connections)
       p = @players[@connections]
-      greeting = 'Welcome to the server, ' + name + '!'
-      send_msg(p.socket, greeting, 1)
+      puts 'trying to send a message'
+      greeting = @connections.to_s + ',Welcome to the server ' + name + '!'
+      puts greeting
+      send_msg(p.socket, greeting, 0)
       @connections += 1
     end)
   end
@@ -74,10 +77,15 @@ class GameServer
   end
 
   def start_game
+    puts @threads.list.count
+    @threads.list.each do |t|
+      t.exit
+      puts 'closing a thread..'
+    end
     puts 'Max reached!'
     @players.each do |p|
       print('Sending message to ',p.name,"\n")
-      send_msg(p.socket, 'startgame', 0)
+      send_msg(p.socket, 'startgame', 4)
     end
   end
 

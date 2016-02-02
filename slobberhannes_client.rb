@@ -27,6 +27,7 @@ class SlobberhannesClient
   def run
     size = @socket.recvfrom(1)[0]
     @message << size
+    print @message
     if size == ']'
       msg = @message[2..@message.length-3]
       if msg == 'startgame'
