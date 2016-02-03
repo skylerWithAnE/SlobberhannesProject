@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="c1b38fc3-d91b-4ec9-ac1a-c2aa6bcca1f7" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/game_server.rb" afterPath="$PROJECT_DIR$/game_server.rb" />
     </list>
     <ignored path="MyServer.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -343,7 +342,13 @@
       <option name="project" value="LOCAL" />
       <updated>1454456820331</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="new stuff tested in class">
+      <created>1454457995089</created>
+      <option name="number" value="00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1454457995089</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
