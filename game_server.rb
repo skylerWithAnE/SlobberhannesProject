@@ -47,9 +47,9 @@ class GameServer
 
   def new_player_notify
     for i in 0...@connections-1
-      notification = ('New player ' + @players[@connections-1].name + ' has joined the server!')
+      notification = @players[@connections-1].position.to_s + ',' + @players[@connections-1].name
       puts notification
-      send_msg(@players[i].socket, notification, 4)
+      send_msg(@players[i].socket, notification, 2)
     end
   end
 
@@ -86,6 +86,7 @@ class GameServer
     @players.each do |p|
       print('Sending message to ',p.name,"\n")
       send_msg(p.socket, 'startgame', 4)
+      send_msg(p.socket, '1,2,3,4,5,6,7,8', 5)
     end
   end
 
