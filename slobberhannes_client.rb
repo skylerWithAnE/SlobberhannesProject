@@ -25,15 +25,15 @@ class SlobberhannesClient
   end
 
   def run
-    size = @socket.recvfrom(1)[0]
-    @message << size
-    print @message
-    if size == ']'
-      msg = @message[2..@message.length-3]
+    byte = @socket.recvfrom(1)[0]
+    @message << byte
+    if byte == "\n"
+      id = @message[0]
+      msg = @message[1..@message.length-1]
       if msg == 'startgame'
         @status = :ready
       else
-        puts msg
+        puts id, msg
       end
 
       @message.clear

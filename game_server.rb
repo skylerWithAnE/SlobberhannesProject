@@ -32,7 +32,8 @@ class GameServer
   end
 
   def get_players
-    @threads.add(Thread.start(@dts.accept) do |s|
+    #@threads.add((Thread.start(@dts.accept) do |s|
+    s = @dts.accept
       puts 'new thread started'
       name = s.gets.chomp
       @players[@connections].join(s, name, @connections)
@@ -42,7 +43,7 @@ class GameServer
       puts greeting
       send_msg(p.socket, greeting, 0)
       @connections += 1
-    end)
+    #end).join)
   end
 
   def new_player_notify

@@ -7,7 +7,7 @@ end
 def main
   s = GameServer.new
   sleep(0.001)
-  while s.status == :initialized #!= :stopped or s.status != :initialized
+  while s.status == :initialized
     s.get_players()
     sleep(0.001)
     puts 'main loop ' , s.status
