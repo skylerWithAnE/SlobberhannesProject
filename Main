@@ -14,14 +14,13 @@ def main
     s.update()
   end
   cards_dealt = false
-  if s.status == :full
-    if cards_dealt == false
-        cards_dealt = true
-        s.start_game
-    end
+  if s.status == :full and cards_dealt == false
+    cards_dealt = true
+    s.start_game
   end
+  while s.status == :playing
 
-
+  end
 end
 
 main

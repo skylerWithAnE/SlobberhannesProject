@@ -37,16 +37,16 @@ class GameServer
 
   def get_players
     #@threads.add((Thread.start(@dts.accept) do |s|
-    s = @server.accept()
-    puts 'new thread started'
-    name = s.gets.chomp
-    @players[@connections].join(s, name, @connections)
-    p = @players[@connections]
-    puts 'trying to send a message'
-    greeting = @connections.to_s + ',Welcome to the server ' + name + '!'
-    puts greeting
-    send_msg(p.socket, greeting, 0)
-    @connections += 1
+      s = @server.accept()
+      puts 'new thread started'
+      name = s.gets.chomp
+      @players[@connections].join(s, name, @connections)
+      p = @players[@connections]
+      puts 'trying to send a message'
+      greeting = @connections.to_s + ',Welcome to the server ' + name + '!'
+      puts greeting
+      send_msg(p.socket, greeting, 0)
+      @connections += 1
     #end).join)
   end
 
@@ -99,26 +99,12 @@ class GameServer
         p.deal_card(@raw_cards.pop)
       end
     end
-    @players.each do |p|
-      puts p.hand.length
-    end
   end
 
-  def build_real_deck
-    @raw_cards.each do |c|
-      q = c/13  #number of cards per suit.
-      r = c%13  #rank of the card.
-      @real_deck.push(Card.new(r,q))
-      end
-  end
+    #q = rc/13  #number of cards per suit.
+    #r = rc%13  #rank of the card.
+
   def start_game
-=begin
-    puts @threads.list.count
-    @threads.list.each do |t|
-      t.exit
-      puts 'closing a thread..'
-    end
-=end
     puts 'Max reached!'
     deal_cards
     @players.each do |p|
@@ -126,8 +112,7 @@ class GameServer
       send_msg(p.socket, 'startgame', 4)
       send_msg(p.socket, p.hand_msg, 5)
     end
-  #rescue Errno::EPIPE
-    #puts "Some player disconnected... can't start game."
+    @status = :playing
   end
 
 =begin
