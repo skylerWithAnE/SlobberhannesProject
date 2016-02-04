@@ -13,10 +13,15 @@ def main
     puts 'main loop ' , s.status
     s.update()
   end
-
+  cards_dealt = false
   if s.status == :full
-    s.start_game
+    if cards_dealt == false
+        cards_dealt = true
+        s.start_game
+    end
   end
+
+
 end
 
 main

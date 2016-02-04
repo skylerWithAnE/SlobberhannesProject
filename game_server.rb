@@ -5,12 +5,15 @@ class GameServer
 
   def initialize
 
-    @dts = TCPServer.new('0.0.0.0',6666)#('0.0.0.0', 7672)
-
+    @server = TCPServer.new('0.0.0.0', 6661)#('0.0.0.0', 7672)
     @players = Array.new
     @threads = ThreadGroup.new
     @connections = 0
     @max_connections = 4
+    @raw_cards = Array.new
+    for c in 0...52 do
+      @raw_cards.push(c)
+    end
     for i in 0...@max_connections do
       @players.push(Player.new)
     end
@@ -23,7 +26,7 @@ class GameServer
   end
 
   def send_msg(ps, msg, identifier)
-    print('sending message: ', identifier, msg)
+    print('sending message: ', identifier, msg, "\n")
     m = msg.unpack('A*')
     ps.print(identifier)
     ps.puts(m)
@@ -33,16 +36,16 @@ class GameServer
 
   def get_players
     #@threads.add((Thread.start(@dts.accept) do |s|
-    s = @dts.accept
-      puts 'new thread started'
-      name = s.gets.chomp
-      @players[@connections].join(s, name, @connections)
-      p = @players[@connections]
-      puts 'trying to send a message'
-      greeting = @connections.to_s + ',Welcome to the server ' + name + '!'
-      puts greeting
-      send_msg(p.socket, greeting, 0)
-      @connections += 1
+    s = @server.accept()
+    puts 'new thread started'
+    name = s.gets.chomp
+    @players[@connections].join(s, name, @connections)
+    p = @players[@connections]
+    puts 'trying to send a message'
+    greeting = @connections.to_s + ',Welcome to the server ' + name + '!'
+    puts greeting
+    send_msg(p.socket, greeting, 0)
+    @connections += 1
     #end).join)
   end
 
@@ -70,6 +73,9 @@ class GameServer
       end
     end
     new_player_notify
+    sleep(0.1)
+  #rescue Errno::EPIPE
+    #puts 'some client disconnected... No support for this right now, sorry!'
     if @connections == @max_connections
       puts 'good news! server is full!'
       @status == :full
@@ -77,20 +83,47 @@ class GameServer
     end
   end
 
+  def deal_cards
+    illegal_cards = [1, 2, 3, 4, 5,
+                     14,15,16,17,18,
+                     27,28,29,30,31,
+                     40,41,42,43,44]
+    illegal_cards.each do |c|
+      @raw_cards.delete(c);
+    end
+    @raw_cards.shuffle
+    for i in 0...8 do
+      @players.each do |p|
+        p.deal_card(@raw_cards.pop)
+      end
+    end
+    @players.each do |p|
+      puts p.hand.length
+    end
+
+
+  end
+
   def start_game
+=begin
     puts @threads.list.count
     @threads.list.each do |t|
       t.exit
       puts 'closing a thread..'
     end
+=end
     puts 'Max reached!'
+    deal_cards
     @players.each do |p|
       print('Sending message to ',p.name,"\n")
       send_msg(p.socket, 'startgame', 4)
-      send_msg(p.socket, '1,2,3,4,5,6,7,8', 5)
+      send_msg(p.socket, p.hand_msg, 5)
     end
+  #rescue Errno::EPIPE
+    #puts "Some player disconnected... can't start game."
   end
 
+=begin
   def shut_down
     @players.each do |p|
       send_msg(p.socket, 'shutdown', 0)
@@ -101,5 +134,6 @@ class GameServer
       thr.exit
     end
   end
+=end
 
 end
