@@ -10,6 +10,7 @@ class GameServer
     @threads = ThreadGroup.new
     @connections = 0
     @max_connections = 4
+    @real_deck = Array.new
     @raw_cards = Array.new
     for c in 0...52 do
       @raw_cards.push(c)
@@ -54,6 +55,7 @@ class GameServer
       notification = @players[@connections-1].position.to_s + ',' + @players[@connections-1].name
       puts notification
       send_msg(@players[i].socket, notification, 2)
+      send_msg(@players[@connections-1].socket, @players[i].position.to_s + ',' + @players[i].name, 2)
     end
   end
 
@@ -100,10 +102,15 @@ class GameServer
     @players.each do |p|
       puts p.hand.length
     end
-
-
   end
 
+  def build_real_deck
+    @raw_cards.each do |c|
+      q = c/13  #number of cards per suit.
+      r = c%13  #rank of the card.
+      @real_deck.push(Card.new(r,q))
+      end
+  end
   def start_game
 =begin
     puts @threads.list.count

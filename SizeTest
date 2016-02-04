@@ -1,3 +1,4 @@
-s = 'message!!'.unpack('B*')
-print("msg: ", s, "\n")
-print("packed ", s.pack('B*'),"\n")
+s = 15
+a = 13
+d = s/a
+puts d

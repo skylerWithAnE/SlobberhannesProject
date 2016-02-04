@@ -12,9 +12,6 @@ class Player
 
   def deal_card(i)
     @raw_hand.push(i)
-    #@raw_hand << ','
-    #puts @raw_hand.length
-
   end
 
   def join(s, name, position)
