@@ -86,7 +86,7 @@ class GameServer
   end
 
   def deal_cards
-    illegal_cards = [1, 2, 3, 4, 5,
+    illegal_cards = [ 0, 1, 2, 3, 4,
                      14,15,16,17,18,
                      27,28,29,30,31,
                      40,41,42,43,44]
@@ -109,7 +109,7 @@ class GameServer
     deal_cards
     @players.each do |p|
       print('Sending message to ',p.name,"\n")
-      send_msg(p.socket, 'startgame', 4)
+      #send_msg(p.socket, 'startgame', 4)
       send_msg(p.socket, p.hand_msg, 5)
     end
     @status = :playing
@@ -129,3 +129,11 @@ class GameServer
 =end
 
 end
+
+=begin
+
+
+
+
+
+=end
