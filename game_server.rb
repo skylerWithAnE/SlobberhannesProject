@@ -5,7 +5,7 @@ class GameServer
 
   def initialize
 
-    @server = TCPServer.new('0.0.0.0', 6661)#('0.0.0.0', 7672)
+    @server = TCPServer.new('0.0.0.0', 6661)  #('0.0.0.0', 7672)
     @players = Array.new
     @threads = ThreadGroup.new
     @connections = 0
@@ -93,7 +93,7 @@ class GameServer
     illegal_cards.each do |c|
       @raw_cards.delete(c);
     end
-    @raw_cards.shuffle
+    @raw_cards = @raw_cards.shuffle
     for i in 0...8 do
       @players.each do |p|
         p.deal_card(@raw_cards.pop)
@@ -106,34 +106,12 @@ class GameServer
 
   def start_game
     puts 'Max reached!'
-    deal_cards
+    deal_cards()
     @players.each do |p|
-      print('Sending message to ',p.name,"\n")
-      #send_msg(p.socket, 'startgame', 4)
+      print('Sending message to ', p.name, "\n")
       send_msg(p.socket, p.hand_msg, 5)
     end
     @status = :playing
   end
 
-=begin
-  def shut_down
-    @players.each do |p|
-      send_msg(p.socket, 'shutdown', 0)
-      sleep 0.1
-      p.socket.close
-    end
-    @threads.each do |thr|
-      thr.exit
-    end
-  end
-=end
-
 end
-
-=begin
-
-
-
-
-
-=end
