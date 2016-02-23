@@ -35,6 +35,9 @@ class SlobberhannesClient
       else
         puts id, msg
       end
+      if id == '6'
+        @socket.puts('w')
+      end
 
       @message.clear
     end

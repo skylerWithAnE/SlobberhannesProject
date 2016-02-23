@@ -9,9 +9,11 @@ class GameServer
     @players = Array.new
     @threads = ThreadGroup.new
     @connections = 0
-    @max_connections = 4
+    @max_connections = 1
     @real_deck = Array.new
     @raw_cards = Array.new
+    @player_turn = 0
+    @last_msg_sent = ''
     for c in 0...52 do
       @raw_cards.push(c)
     end
@@ -27,16 +29,19 @@ class GameServer
   end
 
   def send_msg(ps, msg, identifier)
-    print('sending message: ', identifier, msg, "\n")
+    if msg != @last_msg_sent
+      print('sending message: ', identifier, msg, "\n")
+    end
     m = msg.unpack('A*')
     ps.print(identifier)
     ps.puts(m)
     ps.flush
     sleep(0.01)
+    @last_msg_sent = msg
   end
 
   def get_players
-    #@threads.add((Thread.start(@dts.accept) do |s|
+    #@threads.add((Thread.start(@s.accept) do |s|
       s = @server.accept()
       puts 'new thread started'
       name = s.gets.chomp
@@ -112,6 +117,18 @@ class GameServer
       send_msg(p.socket, p.hand_msg, 5)
     end
     @status = :playing
+  end
+
+  def handle_turn
+    player = @players[@player_turn]
+    send_msg(player.socket, '', 6)
+    rs, ws = IO.select([player.socket], [])
+    if r = rs[0]
+      ret = r.read(1)
+      if ret == 'w'
+        sleep(0.001)
+      end
+    end
   end
 
 end
