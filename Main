@@ -13,13 +13,18 @@ def main
     puts 'main loop ' , s.status
     s.update()
   end
-  cards_dealt = false
-  if s.status == :full and cards_dealt == false
+
+  sleep(1)
+
+  if s.status == :full
     cards_dealt = true
     s.start_game
   end
-  while s.status == :playing
 
+  sleep(1)      #give clients some time before I start the turns...
+
+  while s.status == :playing
+    s.handle_turn
   end
 end
 

@@ -7,13 +7,15 @@ class GameServer
 
     @server = TCPServer.new('0.0.0.0', 6661)  #('0.0.0.0', 7672)
     @players = Array.new
-    @threads = ThreadGroup.new
+    #@threads = ThreadGroup.new
     @connections = 0
-    @max_connections = 1
+    @max_connections = 4
     @real_deck = Array.new
     @raw_cards = Array.new
     @player_turn = 0
     @last_msg_sent = ''
+    @waiting_for_player = false
+    @player_turn_msg = ''
     for c in 0...52 do
       @raw_cards.push(c)
     end
@@ -120,15 +122,46 @@ class GameServer
   end
 
   def handle_turn
+    puts 'handle turn loop...'
     player = @players[@player_turn]
-    send_msg(player.socket, '', 6)
+    if not @waiting_for_player
+      send_msg(player.socket, '', 6)
+      @waiting_for_player = true
+    end
     rs, ws = IO.select([player.socket], [])
     if r = rs[0]
       ret = r.read(1)
-      if ret == 'w'
-        sleep(0.001)
+      if ret != "\n"
+        @player_turn_msg << ret
+      else
+        @player_turn_msg = @player_turn_msg[1...@player_turn_msg.length]
+        data = @player_turn_msg.split(',').map(&:to_i)
+        if data[0] == @player_turn
+          card_index = player.hand.index(data[1])
+          if card_index == nil
+            puts "SOMEBODY'S A DIRTY CHEATER... or the server was programmed by a hack."
+          else
+            puts 'A valid card has been played.'
+            player.hand.delete_at(card_index)
+            out_msg = data[0].to_s + ',' + data[1].to_s
+            @players.each do |p|
+              send_msg(p.socket, out_msg, 7)
+            end
+            #increment player turn and keep going.
+            @player_turn += 1
+            @player_turn_msg.clear
+            @waiting_for_player = false
+            if @player_turn >= @max_connections
+              @player_turn = 0
+            end
+          end
+        else
+          puts "SOMEBODY'S A DIRTY CHEATER... or the server was programmed by a hack."
+        end
+
       end
     end
+
   end
 
 end

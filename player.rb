@@ -52,6 +52,7 @@ class Player
       msg << c.to_s
       msg << ','
     end
+    msg = msg[0...msg.length-1]
     msg << "\n"
   end
 end
