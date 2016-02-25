@@ -165,3 +165,7 @@ class GameServer
   end
 
 end
+
+=begin
+  problem sending cards to java client, sometimes causes index-out-of-range exception.
+=end

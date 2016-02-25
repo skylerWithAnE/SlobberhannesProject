@@ -21,7 +21,7 @@ def main
     s.start_game
   end
 
-  sleep(1)      #give clients some time before I start the turns...
+  sleep(3)      #give clients some time before I start the turns...
 
   while s.status == :playing
     s.handle_turn
@@ -29,3 +29,4 @@ def main
 end
 
 main
+
