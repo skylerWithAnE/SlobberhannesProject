@@ -35,10 +35,10 @@ class GameServer
       print('sending message: ', identifier, msg, "\n")
     end
     m = msg.unpack('A*')
-    ps.print(identifier)
-    ps.puts(m)
+    ps.print(identifier, msg, "\n")
+    #ps.puts(m)
     ps.flush
-    sleep(0.01)
+    sleep(0.1)
     @last_msg_sent = msg
   end
 
@@ -81,6 +81,7 @@ class GameServer
         puts p.name
       end
     end
+    sleep(1)
     new_player_notify
     sleep(0.1)
   #rescue Errno::EPIPE
@@ -125,7 +126,7 @@ class GameServer
     puts 'handle turn loop...'
     player = @players[@player_turn]
     if not @waiting_for_player
-      send_msg(player.socket, '', 6)
+      send_msg(player.socket, player.position.to_s, 6)
       @waiting_for_player = true
     end
     rs, ws = IO.select([player.socket], [])
@@ -168,4 +169,6 @@ end
 
 =begin
   problem sending cards to java client, sometimes causes index-out-of-range exception.
+  messages to java client are frequently being misinterpreted, especially when messages come in quick succession.
+  583
 =end
