@@ -157,7 +157,7 @@ end
 
 sleep(1)
 
-turn_started = false
+#turn_started = false
 while c.game_status != :game_over
   while c.status == :waiting
     c.run

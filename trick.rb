@@ -56,6 +56,10 @@ class Trick
       if card > c
         new_high_card = true
       end
+      if card%13 == 0
+        #ace failsafe
+        new_high_card = true
+      end
     end
     if new_high_card == true
       @loser = player_index

@@ -170,6 +170,15 @@ class GameServer
               end
               if player.flagged_cards.include?(data[1])
                 puts 'We got a cheater over here.'
+                #need to send a message to all clients to clear their hands
+                #@players.each do |p|
+                # send_msg(p.socket, @players[turn_count], 'b')
+                #end
+                #@player_turn_msg.clear
+                #@waiting_for_player = false
+                #@player_turn = 0
+                #@turn_count = 0
+                #start_game
               end
               if @trick.hand.suit != int_to_suit(data[1])
                 player.flag_cards(data[1])
@@ -197,7 +206,7 @@ class GameServer
                 @trick.new_hand
                 @player_turn = @trick.dealer
               end
-              if @player_turn >= @max_connections
+              if @player_turn >= @max_connections #need to make this active player count (elimination?)
                 @player_turn = 0
               end
               if @trick.hand_count == 8
@@ -230,8 +239,6 @@ end
 
   not actually failing when someone reveals that they have played out of suit
     throw away current hand and redeal at current dealer, or increment dealer?
-
-  aces are handled as low instead of high
 
   lots of orphan code
 
