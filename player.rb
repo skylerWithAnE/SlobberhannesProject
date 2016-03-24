@@ -16,7 +16,6 @@ class Player
   end
 
   def join(s, name, position)
-    puts 'set player socket'
     @socket = s
     @name = name
     @active = true
@@ -66,8 +65,8 @@ class Player
       msg << c.to_s
       msg << ','
     end
-    msg = msg[0...msg.length-1]
-    msg << "\n"
+    msg[0...msg.length-1]
+
   end
 
   def new_trick

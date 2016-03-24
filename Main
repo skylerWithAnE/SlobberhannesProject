@@ -11,6 +11,7 @@ def main
     s.get_players()
     sleep(0.001)
     puts 'main loop ' , s.status
+    sleep(1)
     s.update()
   end
 
