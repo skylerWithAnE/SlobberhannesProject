@@ -18,7 +18,6 @@ def main
   sleep(1)
 
   if s.status == :full
-    cards_dealt = true
     s.start_game
   end
 

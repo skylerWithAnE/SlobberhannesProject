@@ -11,6 +11,10 @@ class Player
     @score = 0
   end
 
+  def score
+    @score
+  end
+
   def score=(value)
     @score = value
   end
@@ -75,5 +79,6 @@ class Player
 
   def new_trick
     @flagged_cards.clear
+    @hand.clear
   end
 end

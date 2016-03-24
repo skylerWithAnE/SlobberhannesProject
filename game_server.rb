@@ -1,6 +1,7 @@
 require 'socket'
 require_relative 'player'
 require_relative 'trick'
+require_relative 'util'
 
 class GameServer
 
@@ -15,12 +16,11 @@ class GameServer
     @raw_cards = Array.new
     @trick = Trick.new
     @player_turn = 0
+    @turn_count = 0
     @last_msg_sent = ''
     @waiting_for_player = false
+    @cards_dealt  = false
     @player_turn_msg = ''
-    for c in 0...52 do
-      @raw_cards.push(c)
-    end
     for i in 0...@max_connections do
       @players.push(Player.new)
     end
@@ -30,10 +30,6 @@ class GameServer
 
   def status
     @status
-  end
-
-  def new_trick
-    @trick = Trick.new
   end
 
   def send_msg(ps, msg, identifier)
@@ -100,6 +96,12 @@ class GameServer
   end
 
   def deal_cards
+    print 'dealing cards...'
+    @raw_cards = Array.new
+    for c in 0...52 do
+      @raw_cards.push(c)
+      puts c
+    end
     illegal_cards = [ 0, 1, 2, 3, 4,
                      14,15,16,17,18,
                      27,28,29,30,31,
@@ -113,6 +115,7 @@ class GameServer
         p.deal_card(@raw_cards.pop)
       end
     end
+    puts 'finished dealing cards.'
   end
 
     #q = rc/13  #number of cards per suit.
@@ -125,108 +128,91 @@ class GameServer
       print('Sending message to ', p.name, "\n")
       send_msg(p.socket, p.hand_msg, 5)
     end
+    @cards_dealt = true
     @status = :playing
-  end
-
-  def int_to_suit(cardID)
-    suit = :none
-    case cardID
-      when 0
-        suit = :diamonds
-      when 1
-        suit = :hearts
-      when 2
-        suit = :spades
-      when 3
-        suit = :clubs
-    end
-    return suit
-  end
-
-  def validate_suit(cardID, player)
-    s = cardID/13
-    suit = 0
-    case @trick.hand.suit
-      when :diamonds
-        suit = 0
-      when :hearts
-        suit = 1
-      when :spades
-        suit = 2
-      when :clubs
-        suit = 3
-    end
-    trick_suit = @trick.hand.suit
-    player.hand.each do |c|
-
-    end
   end
 
   def handle_turn
     #puts 'handle turn loop...'
-    player = @players[@player_turn]
-    if not @waiting_for_player
-      send_msg(player.socket, player.position.to_s, 6)
-      @waiting_for_player = true
-    end
-    rs, ws = IO.select([player.socket], [])
-    if r = rs[0]
-      ret = r.read(1)
-      if ret != "\n"
-        @player_turn_msg << ret
-      else
-        @player_turn_msg = @player_turn_msg[1...@player_turn_msg.length]
-        data = @player_turn_msg.split(',').map(&:to_i)
-        if data[0] == @player_turn
-          card_index = player.hand.index(data[1])
-          if card_index == nil
-            print "Player tried to play a card that doesn't exist in their hand. Card: " ,data[1],"\n"
-          else
-            puts 'A valid card has been played.'
-            if data[1] == 50   #queen of clubs
-              @trick.hand.penalty_value = @trick.hand.penalty_value + 1
-              puts 'Queen of Clubs played this trick.'
-            end
-            if @player_turn == 0  #set suit of the first card played this trick.
-              @trick.hand.suit = data[1]
-            end
-            if player.flagged_cards.include?(data[1])
-              puts 'We got a cheater over here.'
-            end
-            if @trick.hand.suit != int_to_suit(data[1])
-              player.flag_cards(data[1])
-            end
-            player.hand.delete_at(card_index)
-            out_msg = data[0].to_s + ',' + data[1].to_s
-            @players.each do |p|
-              send_msg(p.socket, out_msg, 7)
-            end
-            @trick.update(data[1], @player_turn)
-            #increment player turn and keep going.
-            @player_turn += 1
-            @player_turn_msg.clear
-            @waiting_for_player = false
-            if @player_turn >= @max_connections
-              puts 'trick finished...'
-              @player_turn = 0
-              @trick.new_hand
-            end
-            if @trick.hand_count == 8
-              #end of trick, send out point values.
-              send_msg(@players[@trick.loser].socket, @trick.hand.penalty_value, 8)
-              @players[@trick.loser].score += @trick.hand.penalty_value
-              @players.each do |p|
-                send_msg(p.socket, @trick.loser, 9)
-                p.flagged_cards.clear
-              end
-              puts 'time for a new trick.'
-              @trick.new_trick
-            end
+    if @cards_dealt
+      player = @players[@player_turn]
+      if not @waiting_for_player
+        if @turn_count == 0
+          if @trick.hand_count == 0 or @trick.hand_count == 7
+            puts 'first or final hand'
+            @trick.add_penalty
           end
-        else
-          puts 'Wrong player tried to take make a move.'
         end
+        send_msg(player.socket, player.position.to_s, 6)
+        @waiting_for_player = true
+      end
+      rs, ws = IO.select([player.socket], [])
+      if r = rs[0]
+        ret = r.read(1)
+        if ret != "\n"
+          @player_turn_msg << ret
+        else
+          @player_turn_msg = @player_turn_msg[1...@player_turn_msg.length]
+          data = @player_turn_msg.split(',').map(&:to_i)
+          if data[0] == @player_turn
+            card_index = player.hand.index(data[1])
+            if card_index == nil
+              print "Player tried to play a card that doesn't exist in their hand. Card: " ,data[1],"\n"
+            else
+              puts 'A valid card has been played.'
+              if data[1] == 50   #queen of clubs
+                #@trick.hand.penalty_value = @trick.hand.penalty_value + 1
+                @trick.add_penalty
+                puts 'Queen of Clubs played this trick.'
+              end
+              if @turn_count == 0  #set suit of the first card played this trick.
+                @trick.hand.suit = data[1]
+              end
+              if player.flagged_cards.include?(data[1])
+                puts 'We got a cheater over here.'
+              end
+              if @trick.hand.suit != int_to_suit(data[1])
+                player.flag_cards(data[1])
+              end
+              player.hand.delete_at(card_index)
+              out_msg = data[0].to_s + ',' + data[1].to_s
+              @players.each do |p|
+                send_msg(p.socket, out_msg, 7)
+              end
+              @trick.update(@player_turn, data[1])
+              #increment player turn and keep going.
+              @player_turn += 1
+              @turn_count += 1
+              @player_turn_msg.clear
+              @waiting_for_player = false
+              if @turn_count >= @max_connections
+                score_msg = @trick.loser.to_s + ',' + @trick.penalty_value.to_s
+                @players.each do |p|
+                  send_msg(p.socket, score_msg, 8)
+                end
+                #send_msg(@players[@trick.loser].socket, score_msg, 8)
+                @players[@trick.loser].score = @players[@trick.loser].score + @trick.penalty_value
+                print 'loser score: ', @players[@trick.loser].score
+                @turn_count = 0
+                @trick.new_hand
+                @player_turn = @trick.dealer
+              end
+              if @player_turn >= @max_connections
+                @player_turn = 0
+              end
+              if @trick.hand_count == 8
+                puts 'time for a new trick.'
+                @trick.new_trick
+                @player_turn = @trick.dealer
+                @cards_dealt = false
+                start_game
+              end
+            end
+          else
+            puts 'Wrong player tried to take make a move.'
+          end
 
+        end
       end
     end
 
@@ -235,7 +221,20 @@ class GameServer
 end
 
 =begin
-  problem sending cards to java client, sometimes causes index-out-of-range exception.
-  messages to java client are frequently being misinterpreted, especially when messages come in quick succession.
-  583
+  end game when a player reaches 10 points
+
+  do i have the turn order stuff correct?
+    currently after every player has taken a turn, I restart from +1 player position as last card
+      should it go, 0,1,2,3 -- 0,1,2,3 for 8 turns and then 1,2,3,0 after new hands have been dealt?
+      or 0,1,2,3 then 1,2,3,0 then 2,3,0,1 and so on?
+
+  not actually failing when someone reveals that they have played out of suit
+    throw away current hand and redeal at current dealer, or increment dealer?
+
+  aces are handled as low instead of high
+
+  lots of orphan code
+
+  the hand class and trick class are really damn confusing, redo that if there's time
+    is a trick the playtime between when the cards are dealt?
 =end

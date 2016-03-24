@@ -47,6 +47,7 @@ class Trick
     @hand = Hand.new
     @hand_count = 0
     @cards = Array.new
+    @penalty_value = 0
   end
 
   def update (player_index, card)
@@ -64,20 +65,22 @@ class Trick
   end
 
   def new_trick
-    @hand_count += 1
-    @dealer += 1
+    @hand_count = 0
+    @dealer = 0
     new_hand
   end
 
   def new_hand
     @hand = Hand.new
-    if @hand_count == 0 or @hand_count == 7
-      @hand.penalty_value = 1
+    if @hand_count == 7
+      @hand.penalty_value = @hand.penalty_value + 1
+      print 'first or final hand.. penalty: ', @hand.penalty_value, "\n"
     end
-    @dealer = @hand_count%4
+    @dealer = @hand_count%4   #I think this is wrong.
     @hand_count += 1
     @hand.suit = -1
     @hand.penalty_value = 0
+    @penalty_value = 0
   end
 
   def hand
@@ -90,6 +93,29 @@ class Trick
 
   def loser
     @loser
+  end
+
+  def dealer
+    @dealer
+  end
+
+  #def penalty_value
+  #  p = 0
+  #  print 'hand count is ', @hand_count, "\n"
+  #  if @hand_count == 0 or @hand_count == 7
+  #    p + 1
+  #  end
+  #  p = @cards.include?(50)? p + 1: p
+  #  print 'penalty value is ', p.to_s, "\n"
+  #  return p
+  #end
+
+  def penalty_value
+    @penalty_value
+  end
+
+  def add_penalty
+    @penalty_value += 1
   end
 
   def validate_suit (value)
