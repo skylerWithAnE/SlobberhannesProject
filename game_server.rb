@@ -195,15 +195,13 @@ class GameServer
             end
             if @trick.hand.suit != int_to_suit(data[1])
               player.flag_cards(data[1])
-              if player.flagged_cards.size > 0
-                puts player.flagged_cards, data[1]
-              end
             end
             player.hand.delete_at(card_index)
             out_msg = data[0].to_s + ',' + data[1].to_s
             @players.each do |p|
               send_msg(p.socket, out_msg, 7)
             end
+            @trick.update(data[1], @player_turn)
             #increment player turn and keep going.
             @player_turn += 1
             @player_turn_msg.clear
@@ -215,10 +213,14 @@ class GameServer
             end
             if @trick.hand_count == 8
               #end of trick, send out point values.
-              puts 'time for a new trick.'
-              while 1
-                x = 1+1
+              send_msg(@players[@trick.loser].socket, @trick.hand.penalty_value, 8)
+              @players[@trick.loser].score += @trick.hand.penalty_value
+              @players.each do |p|
+                send_msg(p.socket, @trick.loser, 9)
+                p.flagged_cards.clear
               end
+              puts 'time for a new trick.'
+              @trick.new_trick
             end
           end
         else

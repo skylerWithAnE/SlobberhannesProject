@@ -42,8 +42,8 @@
   </component>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="ruby-2.1.5-p273" jdkType="RUBY_SDK" />
+    <orderEntry type="jdk" jdkName="ruby-2.2.4-p230" jdkType="RUBY_SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="PROVIDED" name="bigdecimal (v1.2.4, ruby-2.1.5-p273) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="bigdecimal (v1.2.6, ruby-2.2.4-p230) [gem]" level="application" />
   </component>
 </module>

@@ -1,4 +1,6 @@
 require 'socket'
+require_relative 'util'
+
 class SlobberhannesClient
   def initialize(name)
     @name = name
@@ -9,6 +11,7 @@ class SlobberhannesClient
     @game_status = :not_started
     @hand = Array.new
     @position = -1
+    @suit = :none
   end
 
   def status
@@ -58,11 +61,36 @@ class SlobberhannesClient
 
       if id == '7'
         data = msg.split(',').map(&:to_i)
-        puts data, @position, @status
-        if data[0] == @position
-          puts 'well, my turns over.'
-          @status = waiting
+        #puts data, @position, @status
+        #if data[0] == @position
+        #  puts 'well, my turns over.'
+        #  @status = waiting
+        #end
+        if @suit == :none
+          s = data[1]/13
+          case s
+            when 0
+              @suit = :diamonds
+            when 1
+              @suit = :hearts
+            when 2
+              @suit = :spades
+            when 3
+              @suit = :clubs
+          end
         end
+      end
+
+      if id == '8'
+        data = msg.split(',').map(&:to_i)
+        @score += data[1]
+        @suit = :none
+        @hand.clear
+      end
+
+      if id == '9'
+        @suit = :none
+        @hand.clear
       end
 
       @message.clear
@@ -77,8 +105,38 @@ class SlobberhannesClient
     @game_status = :waiting_for_turn
   end
 
+  def get_best_card
+    s = suit_to_int(@suit)
+    candidates = Array.new
+
+    case s
+
+      when -1
+        @hand.each do |c|
+          candidates.push(c)
+        end
+      when 0..3
+        @hand.each do |c|
+          if c/13 == s
+            candidates.push(c)
+          end
+        end
+    end
+    best = -1
+    candidates.each do |c|
+      print "c%13 = ", c%13, " best = ", best, "\n"
+      if c%13 < best
+        best = c
+      end
+    end
+    print 'best card in hand is ', best%13, ' of ', int_to_suit(best/13), ' value: ', best,   "\n"
+    return best
+  end
+
   def play_card
-    msg = '7' + @position.to_s + ',' + @hand.pop.to_s
+    best_card = get_best_card > 0 ? get_best_card : @hand[@hand.length]
+    msg = '7' + @position.to_s + ',' + best_card.to_s
+    @hand = @hand - [best_card]
     @socket.puts(msg)
     @status = :waiting
   end
@@ -119,7 +177,6 @@ while c.game_status != :game_over
   end
 
 end
-
 
 if c.status == :disconnected
   puts 'disconnected, closing down.'

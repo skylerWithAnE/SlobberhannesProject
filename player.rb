@@ -11,6 +11,10 @@ class Player
     @score = 0
   end
 
+  def score=(value)
+    @score = value
+  end
+
   def deal_card(i)
     @raw_hand.push(i)
   end

@@ -4,6 +4,10 @@ class Hand
     @penalty_value = 0
   end
 
+  def cards
+    @cards
+  end
+
   def penalty_value=(v)
     @penalty_value = v
   end
@@ -33,13 +37,36 @@ class Hand
   def suit
     @suit
   end
+
 end
 
 class Trick
   def initialize
     @dealer = 0
+    @loser = -1
     @hand = Hand.new
     @hand_count = 0
+    @cards = Array.new
+  end
+
+  def update (player_index, card)
+    new_high_card = false
+    @cards.each do |c|
+      if card > c
+        new_high_card = true
+      end
+    end
+    if new_high_card == true
+      @loser = player_index
+      print 'new high card from player ', player_index, "\n"
+    end
+    @cards.push(card)
+  end
+
+  def new_trick
+    @hand_count += 1
+    @dealer += 1
+    new_hand
   end
 
   def new_hand
@@ -59,6 +86,10 @@ class Trick
 
   def hand_count
     @hand_count
+  end
+
+  def loser
+    @loser
   end
 
   def validate_suit (value)
