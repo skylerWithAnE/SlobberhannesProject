@@ -143,7 +143,7 @@ class SlobberhannesClient
 
 end
 
-c = SlobberhannesClient.new('Bill Murray')
+c = SlobberhannesClient.new('Dennis Reynolds')
 c.connect(6661)
 sleep(0.001)
 while c.status == :waiting

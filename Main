@@ -1,8 +1,8 @@
 require_relative 'game_server'
 
-Signal.trap(:INT) do
-  puts 'You have killed me!'
-end
+#Signal.trap(:INT) do
+#  puts 'You have killed me!'
+#end
 
 def main
   s = GameServer.new

@@ -199,12 +199,16 @@ class GameServer
                 @players.each do |p|
                   send_msg(p.socket, score_msg, 8)
                 end
+                @players.each do |p|
+                  send_msg(p.socket, @trick.loser.to_s, 9)
+                end
                 #send_msg(@players[@trick.loser].socket, score_msg, 8)
                 @players[@trick.loser].score = @players[@trick.loser].score + @trick.penalty_value
                 print 'loser score: ', @players[@trick.loser].score
                 @turn_count = 0
+                print 'winner of the hand ', @trick.winner, "\n"
+                @player_turn = @trick.winner
                 @trick.new_hand
-                @player_turn = @trick.dealer
               end
               if @player_turn >= @max_connections #need to make this active player count (elimination?)
                 @player_turn = 0
@@ -233,9 +237,7 @@ end
   end game when a player reaches 10 points
 
   do i have the turn order stuff correct?
-    currently after every player has taken a turn, I restart from +1 player position as last card
-      should it go, 0,1,2,3 -- 0,1,2,3 for 8 turns and then 1,2,3,0 after new hands have been dealt?
-      or 0,1,2,3 then 1,2,3,0 then 2,3,0,1 and so on?
+    winner of the previous trick plays first card on the next trick
 
   not actually failing when someone reveals that they have played out of suit
     throw away current hand and redeal at current dealer, or increment dealer?
