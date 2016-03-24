@@ -1,0 +1,35 @@
+    0 - Connection Accepted:  [pos, message]
+    1 - Connection Rejected: [message]
+    2 - Player Joined: [pos, name]
+    3 - Player Quit: [pos, name]
+    4 - Game State Change: [state]
+    5 - Cards Delt: [cardNumber, cardNumber, ... ] ~ Any Number of cards can be given
+    6 - Player's Turn:  [pos]
+    7 - Card Played: [pos, cardNumber] ~    Send when client on its turn selects a card to play. Then it is sent from
+                                            server to ALL clients when client plays a card.
+                                            If position is the same position of the client, interpret the message
+                                            as a confirmation on card that was played
+    8 - AddPoints [pos, (int)pointValue]
+    9 - PlayerWonTrick [pos]
+    a - PlayerWonGame [pos]
+    b -
+
+a - uncapitalized ascii id
+
+Card Numbers (Currently):
+    0 - Diamond Ace
+    [1, 9] Diamond Numbers
+    10 - Diamond Jack
+    11 - Diamond Queen
+    12 - Diamond King
+    [13, 25] Heart Cards (likewise in order)
+    [26, 38] Spades Cards
+    [39, 51] Clubs Cards
+
+
+
+
+
+
+
+    ------------------------------------------------------------

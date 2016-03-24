@@ -4,6 +4,7 @@ class Player
 
   def initialize
     @active = false
+    @flagged_cards = Array.new
     @name = ''
     @raw_hand = Array.new
     @position = -1
@@ -22,6 +23,19 @@ class Player
     @position = position
   end
 
+  def flag_cards(cardID)
+    suit = cardID/13
+    @raw_hand.each do |c|
+      s = c/13
+      if s == suit and @flagged_cards.include?(c) == false
+        @flagged_cards.push(c)
+      end
+    end
+  end
+
+  def flagged_cards
+    @flagged_cards
+  end
   def active
     @active
   end
@@ -54,5 +68,9 @@ class Player
     end
     msg = msg[0...msg.length-1]
     msg << "\n"
+  end
+
+  def new_trick
+    @flagged_cards.clear
   end
 end

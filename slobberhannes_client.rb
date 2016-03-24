@@ -80,7 +80,7 @@ class SlobberhannesClient
   def play_card
     msg = '7' + @position.to_s + ',' + @hand.pop.to_s
     @socket.puts(msg)
-    #@status = :waiting
+    @status = :waiting
   end
 
 end
@@ -107,14 +107,15 @@ while c.game_status != :game_over
   end
 
   while c.status == :my_turn
-    if turn_started
-      c.run
+    #if turn_started
+      #c.run
 
-    else
-      turn_started = true
+    #else
+      #turn_started = true
       puts "hey! it's my turn!!"
       c.play_card
-    end
+
+    #end
   end
 
 end

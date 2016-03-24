@@ -1,5 +1,6 @@
 require 'socket'
 require_relative 'player'
+require_relative 'trick'
 
 class GameServer
 
@@ -12,6 +13,7 @@ class GameServer
     @max_connections = 4
     @real_deck = Array.new
     @raw_cards = Array.new
+    @trick = Trick.new
     @player_turn = 0
     @last_msg_sent = ''
     @waiting_for_player = false
@@ -28,6 +30,10 @@ class GameServer
 
   def status
     @status
+  end
+
+  def new_trick
+    @trick = Trick.new
   end
 
   def send_msg(ps, msg, identifier)
@@ -121,8 +127,42 @@ class GameServer
     @status = :playing
   end
 
+  def int_to_suit(cardID)
+    suit = :none
+    case cardID
+      when 0
+        suit = :diamonds
+      when 1
+        suit = :hearts
+      when 2
+        suit = :spades
+      when 3
+        suit = :clubs
+    end
+    return suit
+  end
+
+  def validate_suit(cardID, player)
+    s = cardID/13
+    suit = 0
+    case @trick.hand.suit
+      when :diamonds
+        suit = 0
+      when :hearts
+        suit = 1
+      when :spades
+        suit = 2
+      when :clubs
+        suit = 3
+    end
+    trick_suit = @trick.hand.suit
+    player.hand.each do |c|
+
+    end
+  end
+
   def handle_turn
-    puts 'handle turn loop...'
+    #puts 'handle turn loop...'
     player = @players[@player_turn]
     if not @waiting_for_player
       send_msg(player.socket, '', 6)
@@ -139,9 +179,25 @@ class GameServer
         if data[0] == @player_turn
           card_index = player.hand.index(data[1])
           if card_index == nil
-            puts "SOMEBODY'S A DIRTY CHEATER... or the server was programmed by a hack."
+            print "Player tried to play a card that doesn't exist in their hand. Card: " ,data[1],"\n"
           else
             puts 'A valid card has been played.'
+            if data[1] == 50   #queen of clubs
+              @trick.hand.penalty_value = @trick.hand.penalty_value + 1
+              puts 'Queen of Clubs played this trick.'
+            end
+            if @player_turn == 0  #set suit of the first card played this trick.
+              @trick.hand.suit = data[1]
+            end
+            if player.flagged_cards.include?(data[1])
+              puts 'We got a cheater over here.'
+            end
+            if @trick.hand.suit != int_to_suit(data[1])
+              player.flag_cards(data[1])
+              if player.flagged_cards.size > 0
+                puts player.flagged_cards, data[1]
+              end
+            end
             player.hand.delete_at(card_index)
             out_msg = data[0].to_s + ',' + data[1].to_s
             @players.each do |p|
@@ -152,11 +208,20 @@ class GameServer
             @player_turn_msg.clear
             @waiting_for_player = false
             if @player_turn >= @max_connections
+              puts 'trick finished...'
               @player_turn = 0
+              @trick.new_hand
+            end
+            if @trick.hand_count == 8
+              #end of trick, send out point values.
+              puts 'time for a new trick.'
+              while 1
+                x = 1+1
+              end
             end
           end
         else
-          puts "SOMEBODY'S A DIRTY CHEATER... or the server was programmed by a hack."
+          puts 'Wrong player tried to take make a move.'
         end
 
       end
