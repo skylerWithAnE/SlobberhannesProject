@@ -51,6 +51,7 @@ class Trick
     @cards = Array.new
     @penalty_value = 0
     @low_card = 1000
+    @high_card = -1
   end
 
   def update (player_index, card)
@@ -62,7 +63,19 @@ class Trick
     if rank == 0
       rank = 13
     end
-    print 'player ' + player_index.to_s + ' played ' + rank.to_s + ' of ' + this_suit.to_s + "\n"
+    print 'player ', player_index.to_s, ' played ', rank.to_s, ' of ', this_suit.to_s, "\nhigh card: ", (@high_card/13), ' of ', int_to_suit(@high_card%13), "\n"
+
+    if this_suit == @hand.suit
+      if rank > @high_card
+        @high_card = rank
+        @loser = player_index
+      end
+    else  #offsuit card.. what to do?
+      if rank >= @high_card #for now we'll just make it the high card even if it's equal to current high card.
+        @high_card = rank
+        @loser = player_index
+      end
+    end
 
 =begin
     @cards.each do |c|
@@ -114,6 +127,7 @@ class Trick
     @last_loser = @loser
     @loser = -1
     @low_card = -1
+    @high_card = -1
   end
 
   def hand

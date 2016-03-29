@@ -39,11 +39,11 @@ class Player
     @position = position
   end
 
-  def flag_cards(cardID)
-    suit = cardID/13
+  def flag_cards(s)
+    #suit = cardID/13
     @raw_hand.each do |c|
       s = c/13
-      if s == suit and @flagged_cards.include?(c) == false
+      if suit == s and @flagged_cards.include?(c) == false
         @flagged_cards.push(c)
       end
     end
@@ -62,6 +62,10 @@ class Player
 
   def set_name(new_name)
     @name = new_name
+  end
+
+  def s
+    @socket
   end
 
   def socket
@@ -89,5 +93,11 @@ class Player
   def new_trick
     @flagged_cards.clear
     @hand.clear
+  end
+
+  def new_round
+    @raw_hand.clear
+    @flagged_cards.clear
+    @score_this_round = @score
   end
 end

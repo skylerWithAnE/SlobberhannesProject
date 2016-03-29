@@ -47,7 +47,7 @@ class GameServer
   def get_players
     #@threads.add((Thread.start(@s.accept) do |s|
       s = @server.accept()
-      puts 'new thread started'
+      puts 'new player joined'
       name = s.gets.chomp
       @players[@connections].join(s, name, @connections)
       p = @players[@connections]
@@ -96,6 +96,9 @@ class GameServer
   end
 
   def deal_cards
+    @players.each do |p|
+      p.new_round()
+    end
     print 'dealing cards...'
     @raw_cards = Array.new
     for c in 0...52 do
@@ -177,23 +180,21 @@ class GameServer
                 @player_turn_msg.clear
                 @waiting_for_player = false
                 player.score = player.score + 4
-                score_msg = player.position.to_s + ',' + player.score.to_s
                 @players.each do |p|
-                  send_msg(p.socket, score_msg, 8)
-                end
-                @players.each do |p|
-                  for i in 0..4
-                    score_msg = i.to_s + ',' + @players[i].score.to_s
-                    send_msg(p.socket, score_msg, 8)
-                  end
+                  score_msg = p.position.to_s + ',' + p.score.to_s
+                  send_msg(p.s, score_msg, 8)
+                  send_msg(p.s, player.position.to_s, 9)
                   p.score_this_round = 0
+                  p.hand.clear
                 end
-                #@player_turn = 0
                 @turn_count = 0
                 start_game
+                return
               end
-              if @trick.hand.suit != int_to_suit(data[1])
-                player.flag_cards(data[1])
+              print 'comparing ', @trick.hand.suit, ' to ', int_to_suit(data[1]/13), "\n"
+              if @trick.hand.suit != int_to_suit(data[1]/13)
+                puts 'card played was offsuit, flagging cards.'
+                player.flag_cards(suit_to_int(@trick.hand.suit))
               end
               player.hand.delete_at(card_index)
               out_msg = data[0].to_s + ',' + data[1].to_s
@@ -207,9 +208,7 @@ class GameServer
               @player_turn_msg.clear
               @waiting_for_player = false
               if @turn_count >= @max_connections
-                #score_msg = @players[@trick.loser].score_this_round#@trick.loser.to_s + ',' + @trick.penalty_value.to_s
-                #send_msg(@players[@trick.loser].socket, score_msg, 8)
-                @players[@trick.loser].score_this_round = @players[@trick.loser].score + @trick.penalty_value
+                @players[@trick.loser].score_this_round = @players[@trick.loser].score_this_round + @trick.penalty_value
                 print 'loser score: ', @players[@trick.loser].score_this_round, "\n"
                 @turn_count = 0
                 print 'winner of the hand ', @trick.winner, "\n"
@@ -222,7 +221,7 @@ class GameServer
                 @players.each do |p|
                   send_msg(p.socket, @trick.loser.to_s, 9)
                 end
-                @player_turn = @trick.winner
+                @player_turn = @trick.loser
                 @trick.new_hand
               end
               if @player_turn >= @max_connections #need to make this active player count (elimination?)
