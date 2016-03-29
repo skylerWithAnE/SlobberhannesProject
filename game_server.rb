@@ -174,11 +174,23 @@ class GameServer
                 #@players.each do |p|
                 # send_msg(p.socket, @players[turn_count], 'b')
                 #end
-                #@player_turn_msg.clear
-                #@waiting_for_player = false
+                @player_turn_msg.clear
+                @waiting_for_player = false
+                player.score = player.score + 4
+                score_msg = player.position.to_s + ',' + player.score.to_s
+                @players.each do |p|
+                  send_msg(p.socket, score_msg, 8)
+                end
+                @players.each do |p|
+                  for i in 0..4
+                    score_msg = i.to_s + ',' + @players[i].score.to_s
+                    send_msg(p.socket, score_msg, 8)
+                  end
+                  p.score_this_round = 0
+                end
                 #@player_turn = 0
-                #@turn_count = 0
-                #start_game
+                @turn_count = 0
+                start_game
               end
               if @trick.hand.suit != int_to_suit(data[1])
                 player.flag_cards(data[1])
@@ -195,18 +207,21 @@ class GameServer
               @player_turn_msg.clear
               @waiting_for_player = false
               if @turn_count >= @max_connections
-                score_msg = @trick.loser.to_s + ',' + @trick.penalty_value.to_s
+                #score_msg = @players[@trick.loser].score_this_round#@trick.loser.to_s + ',' + @trick.penalty_value.to_s
+                #send_msg(@players[@trick.loser].socket, score_msg, 8)
+                @players[@trick.loser].score_this_round = @players[@trick.loser].score + @trick.penalty_value
+                print 'loser score: ', @players[@trick.loser].score_this_round, "\n"
+                @turn_count = 0
+                print 'winner of the hand ', @trick.winner, "\n"
+                index = 0
                 @players.each do |p|
+                  score_msg = index.to_s + ',' + p.score_this_round.to_s
                   send_msg(p.socket, score_msg, 8)
+                  index += 1
                 end
                 @players.each do |p|
                   send_msg(p.socket, @trick.loser.to_s, 9)
                 end
-                #send_msg(@players[@trick.loser].socket, score_msg, 8)
-                @players[@trick.loser].score = @players[@trick.loser].score + @trick.penalty_value
-                print 'loser score: ', @players[@trick.loser].score
-                @turn_count = 0
-                print 'winner of the hand ', @trick.winner, "\n"
                 @player_turn = @trick.winner
                 @trick.new_hand
               end
@@ -215,6 +230,10 @@ class GameServer
               end
               if @trick.hand_count == 8
                 puts 'time for a new trick.'
+                @players.each do |p|
+                  p.score = p.score_this_round
+                  p.score_this_round = 0
+                end
                 @trick.new_trick
                 @player_turn = @trick.dealer
                 @cards_dealt = false

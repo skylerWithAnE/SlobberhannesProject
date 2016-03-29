@@ -54,10 +54,19 @@ class Trick
   end
 
   def update (player_index, card)
+    @cards.push(card)
     new_high_card = false
     new_low_card = false
+    this_suit = int_to_suit(card/13)
+    rank = card%13
+    if rank == 0
+      rank = 13
+    end
+    print 'player ' + player_index.to_s + ' played ' + rank.to_s + ' of ' + this_suit.to_s + "\n"
+
+=begin
     @cards.each do |c|
-      if card%13 > c%13
+      if card%13 > c%13 and c%13 != 0
         new_high_card = true
       end
       if card%13 == 0
@@ -74,15 +83,14 @@ class Trick
         end
       end
     end
+=end
     if new_high_card == true
-      @current_winner = player_index
+      @loser = player_index
       print 'new high card from player ', player_index, "\n"
     end
     if new_low_card == true
-      @loser = player_index
       print 'new low card from player ', player_index, "\n"
     end
-    @cards.push(card)
   end
 
   def new_trick

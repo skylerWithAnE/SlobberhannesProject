@@ -28,10 +28,9 @@ Card Numbers (Currently):
 
     ------------------------------------------------------------
 
-    LOSER (of the game) Player with 10 points
-    LOSER (of the trick) Player with lowest card value
-    WINNER (of the game) Player with lowest points
-    WINNER (of the trick) Player with the highest ON SUIT card value
-           This Player plays the first card of the next trick.
+    WINNER  (of the game) Player with lowest points
+    LOSER   (of the game) Player with 10 points
+    LOSER   (of the trick) Player with the highest ON SUIT card value
+                This Player plays the first card of the next trick.
     DEALER increments each time cards are dealt (moves to left)
 

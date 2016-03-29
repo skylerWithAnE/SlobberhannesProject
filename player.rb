@@ -9,6 +9,15 @@ class Player
     @raw_hand = Array.new
     @position = -1
     @score = 0
+    @score_this_round = 0
+  end
+
+  def score_this_round
+    @score_this_round
+  end
+
+  def score_this_round=(value)
+    @score_this_round = value
   end
 
   def score
