@@ -26,6 +26,9 @@ def main
   while s.status == :playing
     s.handle_turn
   end
+  while s.status == :gameover
+    s.end_game
+  end
 end
 
 main

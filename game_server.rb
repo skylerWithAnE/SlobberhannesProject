@@ -105,7 +105,7 @@ class GameServer
       @raw_cards.push(c)
       puts c
     end
-    illegal_cards = [ 0, 1, 2, 3, 4,
+    illegal_cards = [ 1, 2, 3, 4, 5,
                      14,15,16,17,18,
                      27,28,29,30,31,
                      40,41,42,43,44]
@@ -214,6 +214,7 @@ class GameServer
                 print 'winner of the hand ', @trick.winner, "\n"
                 index = 0
                 @players.each do |p|
+                  p.score_this_round = p.score_this_round == 3? p.score_this_round + 1 : p.score_this_round
                   score_msg = index.to_s + ',' + p.score_this_round.to_s
                   send_msg(p.socket, score_msg, 8)
                   index += 1
@@ -222,6 +223,12 @@ class GameServer
                   send_msg(p.socket, @trick.loser.to_s, 9)
                 end
                 @player_turn = @trick.loser
+                @players.each do |p|
+                  if p.score >= 10
+                    @status = :gameover
+                    return
+                  end
+                end
                 @trick.new_hand
               end
               if @player_turn >= @max_connections #need to make this active player count (elimination?)
@@ -229,9 +236,13 @@ class GameServer
               end
               if @trick.hand_count == 8
                 puts 'time for a new trick.'
+                #slobberhannes_penalty = @trick.slobberhannes_check
+                #if slobberhannes_penalty >= 0
+                  #@players[slobberhannes_penalty].score_this_round = @players[slobberhannes_penalty].score_this_round + 1
+                #end
                 @players.each do |p|
                   p.score = p.score_this_round
-                  p.score_this_round = 0
+                  #p.score_this_round = 0
                 end
                 @trick.new_trick
                 @player_turn = @trick.dealer
@@ -247,6 +258,28 @@ class GameServer
       end
     end
 
+  end
+
+  def end_game
+    winner = -1
+    loser = -1
+    high_score = -1
+    low_score = 10
+
+    @players.each do |p|
+      if p.score < low_score
+        winner = p.position
+        low_score = p.score
+      end
+      if p.score > high_score
+        loser = p.position
+        high_score = p.score
+      end
+    end
+    @players.each do |p|
+      send_msg(p.socket, winner.to_s,'a')
+    end
+    print 'Game over! Player ', winner, ' had the lowest score.  Player ', loser, ' had the highest score', "\n"
   end
 
 end

@@ -39,8 +39,9 @@ class Player
     @position = position
   end
 
-  def flag_cards(s)
+  def flag_cards(suit)
     #suit = cardID/13
+    print @raw_hand
     @raw_hand.each do |c|
       s = c/13
       if suit == s and @flagged_cards.include?(c) == false

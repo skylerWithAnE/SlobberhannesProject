@@ -52,6 +52,10 @@ class Trick
     @penalty_value = 0
     @low_card = 1000
     @high_card = -1
+    @round1winner = -1
+    @round8winner = -1
+    @QoC_winner = -1
+    @QoC_played = false
   end
 
   def update (player_index, card)
@@ -63,40 +67,19 @@ class Trick
     if rank == 0
       rank = 13
     end
-    print 'player ', player_index.to_s, ' played ', rank.to_s, ' of ', this_suit.to_s, "\nhigh card: ", (@high_card/13), ' of ', int_to_suit(@high_card%13), "\n"
-
+    print 'player ', player_index.to_s, ' played ', rank.to_s, ' of ', this_suit.to_s, "\nhigh card: ", (@high_card%13), ' of ', int_to_suit(@high_card/13), "\n"
+    high_card_rank = @high_card > -1? (@high_card%13 == 0? 13 : @high_card%13) : -1 #idk if i've ever written a less readable line
     if this_suit == @hand.suit
-      if rank > @high_card
-        @high_card = rank
+      if rank > high_card_rank
+        @high_card = card
         @loser = player_index
       end
     else  #offsuit card.. what to do?
-      if rank >= @high_card #for now we'll just make it the high card even if it's equal to current high card.
-        @high_card = rank
+      if rank >= high_card_rank #for now we'll just make it the high card even if it's equal to current high card.
+        @high_card = card
         @loser = player_index
       end
     end
-
-=begin
-    @cards.each do |c|
-      if card%13 > c%13 and c%13 != 0
-        new_high_card = true
-      end
-      if card%13 == 0
-        #ace failsafe
-        new_high_card = true
-      end
-      if @low_card == -1
-        @low_card = card
-        new_low_card = true
-      else
-        if card%13 < @low_card%13 and card%13 > 0
-          new_low_card = true
-          @low_card = card
-        end
-      end
-    end
-=end
     if new_high_card == true
       @loser = player_index
       print 'new high card from player ', player_index, "\n"
@@ -113,6 +96,18 @@ class Trick
   end
 
   def new_hand
+    if @hand.penalty_value > 0
+      if @hand_count == 1
+        @round1winner = @loser
+      end
+      if @hand_count == 7
+        @round1winner = @loser
+      end
+      if @QoC_played == true
+        @QoC_winner = @loser
+      end
+
+    end
     @hand = Hand.new
     if @hand_count == 7
       @hand.penalty_value = @hand.penalty_value + 1
@@ -128,6 +123,17 @@ class Trick
     @loser = -1
     @low_card = -1
     @high_card = -1
+    @round1winner = -1
+    @round8winner = -1
+    @QoC_winner = -1
+    @QoC_played = false
+  end
+
+  def slobberhannes_check
+    if @QoC_winner == @round1winner and @round1winner == @round8winner
+      return @QoC_winner
+    end
+    return -1
   end
 
   def hand
