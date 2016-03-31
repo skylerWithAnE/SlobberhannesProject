@@ -125,6 +125,12 @@ class GameServer
     #r = rc%13  #rank of the card.
 
   def start_game
+    @players.each do |p|
+      if p.score >= 10
+        @status = :gameover
+        return
+      end
+    end
     puts 'Max reached!'
     deal_cards()
     @players.each do |p|
@@ -133,6 +139,7 @@ class GameServer
     end
     @cards_dealt = true
     @status = :playing
+    @trick = Trick.new
   end
 
   def handle_turn
@@ -182,9 +189,11 @@ class GameServer
                 player.score = player.score + 4
                 @players.each do |p|
                   score_msg = p.position.to_s + ',' + p.score.to_s
-                  send_msg(p.s, score_msg, 8)
+                  for i in 0..3
+                    send_msg(@players[i].socket, score_msg, 8)
+                  end
                   send_msg(p.s, player.position.to_s, 9)
-                  p.score_this_round = 0
+                  p.score_this_round = p.score
                   p.hand.clear
                 end
                 @turn_count = 0
@@ -223,12 +232,6 @@ class GameServer
                   send_msg(p.socket, @trick.loser.to_s, 9)
                 end
                 @player_turn = @trick.loser
-                @players.each do |p|
-                  if p.score >= 10
-                    @status = :gameover
-                    return
-                  end
-                end
                 @trick.new_hand
               end
               if @player_turn >= @max_connections #need to make this active player count (elimination?)

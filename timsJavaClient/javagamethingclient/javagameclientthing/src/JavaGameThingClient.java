@@ -147,7 +147,7 @@ public class JavaGameThingClient
     static boolean gameWon = false;
 //static int[] deckPosition = {320,230};
     
-    static String myName = "namenamename";
+    static String myName = "";
     
     static Graphics2D g = null;
     
@@ -187,7 +187,7 @@ public class JavaGameThingClient
         g.setPaint(new Color(16,140,32));
         g.fillRect(0,0,win.getWidth(),win.getHeight());
 
-        //myName = JOptionPane.showInputDialog(null, "Name?");
+        myName = JOptionPane.showInputDialog(null, "Name?");
         
         networkThread.start();
         
