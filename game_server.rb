@@ -217,6 +217,9 @@ class GameServer
               @player_turn_msg.clear
               @waiting_for_player = false
               if @turn_count >= @max_connections
+                @players.each do |p|
+                  print 'Player ', p.name, ' has a score of ', p.score, "\n"
+                end
                 @players[@trick.loser].score_this_round = @players[@trick.loser].score_this_round + @trick.penalty_value
                 print 'loser score: ', @players[@trick.loser].score_this_round, "\n"
                 @turn_count = 0
